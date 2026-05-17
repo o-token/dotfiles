@@ -1,0 +1,72 @@
+{
+    "editor.wordWrap": "on",
+    "vim.insertModeKeyBindings": [
+        {
+            "before": [
+                "j",
+                "j"
+            ],
+            "after": [
+                "<Esc>"
+            ]
+        }
+    ],
+    "dotnet.completion.showNameCompletionSuggestions": false,
+    "editor.acceptSuggestionOnCommitCharacter": false,
+    "debug.onTaskErrors": "debugAnyway",
+    "explorer.confirmDelete": false,
+    "python.testing.promptToConfigure": false,
+    "[python]": {
+        "editor.defaultFormatter": "ms-python.black-formatter",
+        "editor.formatOnSave": true,
+        "diffEditor.ignoreTrimWhitespace": true,
+    },
+    "black-formatter.args": ["--line-length", "120"],
+    "json.format.enable": false,
+    "files.insertFinalNewline": true,
+    "vim.statusBarColorControl": true,
+    "workbench.colorCustomizations": {
+        "statusBar.background": "#005f5f",
+        "statusBar.noFolderBackground": "#005f5f",
+        "statusBar.debuggingBackground": "#005f5f",
+        "statusBar.foreground": "#ffffff",
+        "statusBar.debuggingForeground": "#ffffff"
+    },
+    "terminal.integrated.fontSize": 12,
+    "security.workspace.trust.untrustedFiles": "open",
+    "C_Cpp.intelliSenseEngineFallback": "enabled",
+    "path-autocomplete.pathMappings": {
+    },
+    "editor.renderWhitespace": "all",
+    "[cpp]": {
+        "editor.defaultFormatter": "ms-vscode.cpptools"
+    },
+    "C_Cpp.clang_format_fallbackStyle": "LLVM",
+    "vim.incsearch": true,
+    "vim.hlsearch": true,
+    "git.confirmSync": false,
+    "git.autofetch": true,
+    "livePreview.debugOnExternalPreview": true,
+    "livePreview.autoRefreshPreview": "On Changes to Saved Files",
+    "workbench.editor.enablePreview": false,
+    "editor.quickSuggestions": {
+        "comments": "on",
+        "strings": "on"
+    },
+    "workbench.colorTheme": "Tender",
+    "haskell.manageHLS": "GHCup",
+    "[haskell]": {
+        "editor.defaultFormatter": "haskell.haskell"
+    },
+    "files.associations": {
+        "*.brdf": "glsl",
+        "*.prj": "glsl",
+        "*.shp": "glsl",
+        "*.ppp": "glsl",
+        "*.tsm": "glsl"
+    },
+    "explorer.confirmDragAndDrop": false,
+    "accessibility.signalOptions.volume": 0,
+    "jupyter.askForKernelRestart": false,
+    "github.copilot.nextEditSuggestions.enabled": true,
+}

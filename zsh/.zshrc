@@ -47,6 +47,7 @@ bindkey -M menuselect 'l' vi-forward-char
 
 # personal alias/function
 alias vi='nvim'
+alias v='nvim'
 alias ssh='ssh -XY'
 alias l='ls -G'
 alias ls='ls -G'
@@ -55,9 +56,19 @@ alias la='ls -a'
 alias lw='ls|wc -l'
 alias lla='ls -al'
 alias mkdir='mkdir -p'
-alias ide="~/.scripts/tmux_ide.sh"
 alias rsync='rsync --exclude .DS_Store'
-set -o noclobber
+alias c='codex'
+alias lag='lazygit'
+alias lad='lazydocker'
+
+setopt AUTO_PARAM_SLASH
+setopt AUTO_REMOVE_SLASH
+
+autoload -Uz compinit
+compinit
+
+zstyle ':completion:*' special-dirs true
+
 function peco-select-history() {
     local tac
     if which tac > /dev/null; then
@@ -74,3 +85,28 @@ function peco-select-history() {
 }
 zle -N peco-select-history
 bindkey '^r' peco-select-history
+
+export NVM_DIR="$HOME/.nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
+[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
+
+# OPENAI
+export PYENV_ROOT="$HOME/.pyenv"
+command -v pyenv >/dev/null || export PATH="$PYENV_ROOT/bin:$PATH"
+eval "$(pyenv init -)"
+
+# ghcup-env
+[ -f "/Users/taka/.ghcup/env" ] && . "/Users/taka/.ghcup/env" 
+
+# Created by `pipx` on 2024-12-25 12:49:07
+export PATH="$PATH:/Users/taka/.local/bin"
+
+function y() {
+	local tmp="$(mktemp -t "yazi-cwd.XXXXXX")" cwd
+	yazi "$@" --cwd-file="$tmp"
+	IFS= read -r -d '' cwd < "$tmp"
+	[ -n "$cwd" ] && [ "$cwd" != "$PWD" ] && builtin cd -- "$cwd"
+	rm -f -- "$tmp"
+}
+
+eval "$(zoxide init zsh)"

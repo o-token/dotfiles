@@ -1,7 +1,6 @@
 # This is Git's per-user configuration file.
 [user]
-    name = DaNagi88
-    email =
+    name = SuperSocialForce
 [alias]
     tree = log --graph --all --format=\"%x09%C(cyan bold)%an%Creset%x09%C(yellow)%h%Creset %C(magenta reverse)%d%Creset %s\"
     graph = log --graph --all --decorate=full
