@@ -61,6 +61,118 @@ apt_install() {
   "${SUDO[@]}" DEBIAN_FRONTEND=noninteractive apt-get install -y "$@"
 }
 
+docker_apt_source_is_active() {
+  local source_file="$1"
+
+  case "$source_file" in
+    *.list)
+      awk '
+        /^[[:space:]]*#/ { next }
+        /https?:\/\/download[.]docker[.]com\/linux\/ubuntu/ { found = 1 }
+        END { exit found ? 0 : 1 }
+      ' "$source_file"
+      ;;
+    *.sources)
+      awk '
+        function reset_stanza() {
+          stanza_has_docker = 0
+          stanza_disabled = 0
+        }
+
+        function finish_stanza() {
+          if (stanza_has_docker && !stanza_disabled) {
+            found = 1
+          }
+        }
+
+        BEGIN { reset_stanza() }
+        /^[[:space:]]*$/ {
+          finish_stanza()
+          reset_stanza()
+          next
+        }
+        /^[[:space:]]*#/ { next }
+        {
+          line = tolower($0)
+          if (line ~ /^[[:space:]]*enabled:[[:space:]]*no([[:space:]]|$)/) {
+            stanza_disabled = 1
+          }
+          if (line ~ /^[[:space:]]*uris:[[:space:]].*https?:\/\/download[.]docker[.]com\/linux\/ubuntu([[:space:]]|$)/) {
+            stanza_has_docker = 1
+          }
+        }
+        END {
+          finish_stanza()
+          exit found ? 0 : 1
+        }
+      ' "$source_file"
+      ;;
+    *)
+      return 1
+      ;;
+  esac
+}
+
+docker_apt_source_is_canonical() {
+  local source_file="$1"
+
+  [[ "$source_file" == "/etc/apt/sources.list.d/docker.sources" ]] || return 1
+  [[ -r /etc/apt/keyrings/docker.asc ]] || return 1
+
+  awk '
+    /^[[:space:]]*#/ { next }
+    {
+      line = tolower($0)
+      if (line ~ /^[[:space:]]*enabled:[[:space:]]*no([[:space:]]|$)/) {
+        disabled = 1
+      }
+      if (line ~ /^[[:space:]]*uris:[[:space:]].*https?:\/\/download[.]docker[.]com\/linux\/ubuntu([[:space:]]|$)/) {
+        has_docker_uri = 1
+      }
+      if (line ~ /^[[:space:]]*signed-by:[[:space:]]*\/etc\/apt\/keyrings\/docker[.]asc([[:space:]]|$)/) {
+        has_canonical_keyring = 1
+      }
+    }
+    END {
+      exit has_docker_uri && has_canonical_keyring && !disabled ? 0 : 1
+    }
+  ' "$source_file"
+}
+
+disable_conflicting_docker_apt_sources() {
+  local source_dir="/etc/apt/sources.list.d"
+  local source_file
+  local disabled_file
+  local nullglob_was_set=0
+
+  [[ -d "$source_dir" ]] || return 0
+
+  if shopt -q nullglob; then
+    nullglob_was_set=1
+  fi
+  shopt -s nullglob
+
+  for source_file in "$source_dir"/*.list "$source_dir"/*.sources; do
+    [[ -f "$source_file" ]] || continue
+    docker_apt_source_is_active "$source_file" || continue
+    docker_apt_source_is_canonical "$source_file" && continue
+
+    disabled_file="${source_file}.disabled-by-dotfiles.${TIMESTAMP}"
+    while [[ -e "$disabled_file" ]]; do
+      disabled_file="${source_file}.disabled-by-dotfiles.${TIMESTAMP}.${RANDOM}"
+    done
+
+    info "Disabling conflicting Docker apt source: ${source_file} -> ${disabled_file}"
+    "${SUDO[@]}" mv "$source_file" "$disabled_file"
+  done
+
+  if ((nullglob_was_set)); then
+    shopt -s nullglob
+  else
+    shopt -u nullglob
+  fi
+}
+
 install_base_packages() {
   info "Installing base Ubuntu packages."
   apt_update
@@ -591,6 +703,7 @@ main() {
   require_ubuntu
   require_sudo
 
+  disable_conflicting_docker_apt_sources
   install_base_packages
   install_repo_packages
   install_neovim
